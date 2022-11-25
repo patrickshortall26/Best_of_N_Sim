@@ -50,7 +50,11 @@ def SProdOp(pooled_opinions, w):
     """
     Performs SProdOp for some amount of opinions and a weight w
     """
-    c = (np.prod(pooled_opinions)**w)/((np.prod(pooled_opinions)**w)+(np.prod(list(1-np.asarray(pooled_opinions)))**w))
+    top = (np.prod(pooled_opinions)**w)
+    bottom = ((np.prod(pooled_opinions)**w)+(np.prod(list(1-np.asarray(pooled_opinions)))**w))
+    print(top)
+    print(bottom)
+    c = top/bottom
     return c
 
 def pool_agents(agents, k, w):
@@ -81,7 +85,7 @@ def update_op(agent, alpha):
     # Assign agent opinion to variable x to make equation shorter
     x = agent.opinion
     # Update opinion
-    agent.opinion = (1-alpha)/(x+alpha-2*alpha*x)
+    agent.opinion = ((1-alpha)*x)/(x+alpha-2*alpha*x)
     return agent
 
 def choose_update(agent, epsilon, alpha):
