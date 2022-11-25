@@ -1,3 +1,6 @@
+# Ignore cpython files
+*.pyc
+
 # Ignore virtual environment
 /Mesa_Simulation/
 
