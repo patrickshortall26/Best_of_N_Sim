@@ -45,7 +45,14 @@ class Boid(ap.Agent):
         # Initialise random velocity and opinion
         self.velocity = normalize(
             self.model.nprandom.random(self.p.ndim) - 0.5)
-        self.opinion = mp.mpmathify(self.model.random.random())
+        # Set up opinions of agents either randomly or fixed if agent is byzantine
+        if self.p.byzantine_agents > 0:
+            self.opinion = self.p.byzantine_opinion
+            self.byzantine = True
+            self.p.byzantine_agents -= 1
+        else:
+            self.opinion = mp.mpmathify(self.model.random.random())
+            self.byzantine = False
 
     def setup_pos(self, space):
         """
@@ -113,31 +120,33 @@ class Boid(ap.Agent):
         Pool the opinions from nearby agents
         and update opinion
         """
-        # Gather neighbours
-        nbs = self.neighbors(self, distance=self.p.inner_radius)
-        if len(nbs) > 0:
-            # Generate random number between 0 and 1 (probability)
-            prob = self.model.random.random()
-            # Receive evidence if prob < epsilon
-            if prob <= self.p.pooling_epsilon:
-                nbs_ops_array = np.array(nbs.opinion)
-                # Add back in own opinion
-                pool_array = np.append(nbs_ops_array, self.opinion)
-                h1 = (np.prod(pool_array))**self.p.w
-                h2 = (np.prod(1-pool_array))**self.p.w
-                # Update opinion using SProdOp
-                self.opinion = h1/(h1+h2)
+        if not self.byzantine:
+            # Gather neighbours
+            nbs = self.neighbors(self, distance=self.p.inner_radius)
+            if len(nbs) > 0:
+                # Generate random number between 0 and 1 (probability)
+                prob = self.model.random.random()
+                # Receive evidence if prob < epsilon
+                if prob <= self.p.pooling_epsilon:
+                    nbs_ops_array = np.array(nbs.opinion)
+                    # Add back in own opinion
+                    pool_array = np.append(nbs_ops_array, self.opinion)
+                    h1 = (np.prod(pool_array))**self.p.w
+                    h2 = (np.prod(1-pool_array))**self.p.w
+                    # Update opinion using SProdOp
+                    self.opinion = h1/(h1+h2)
 
     def evidential_updating(self):
         """
         Update opinions from evidence at an epsilon chance 
         """
-        # Generate random number between 0 and 1 (probability)
-        prob = self.model.random.random()
-        # Receive evidence if prob < epsilon
-        if prob <= self.p.evidence_epsilon:
-            # Upate using Chanelle's equation
-            self.opinion = ((1-self.p.alpha)*self.opinion)/(self.opinion+self.p.alpha-2*self.p.alpha*self.opinion)
+        if not self.byzantine:
+            # Generate random number between 0 and 1 (probability)
+            prob = self.model.random.random()
+            # Receive evidence if prob < epsilon
+            if prob <= self.p.evidence_epsilon:
+                # Upate using Chanelle's equation
+                self.opinion = ((1-self.p.alpha)*self.opinion)/(self.opinion+self.p.alpha-2*self.p.alpha*self.opinion)
 
 
 class BoidsModel(ap.Model):
