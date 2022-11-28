@@ -5,8 +5,10 @@ import mpmath as mp
 
 # Visualization
 from mpl_toolkits.axes_grid1 import make_axes_locatable
+from matplotlib.animation import FuncAnimation as animate
+from IPython.display import HTML
 import matplotlib.pyplot as plt
-import IPython
+import pandas as pd
 
 def normalize(v):
     """ Normalize a vector to length 1. """
@@ -178,10 +180,17 @@ class BoidsModel(ap.Model):
         self.agents.evidential_updating()
 
     def update(self):
-        # Creat variable for agents opinions
+        
+        # Create variable for agents opinions
         opinions = self.agents.opinion
         # Record agents opinions
         self.record("opinions", tuple(opinions))
+
+        # Get agent's positions
+        pos = self.space.positions.values()
+        pos = np.array(tuple(pos)).T
+        self.record("pos", pos)
+
         # Check if consensus reached
         consensus = conensus_check(opinions)
         if consensus:
@@ -190,39 +199,35 @@ class BoidsModel(ap.Model):
 
 """ vvv Animation vvv """
 
-def animation_plot_single(m, ax):
-    # Get number of dimensions
-    ndim = m.p.ndim
-    # Set title for plot (changes through time)
-    ax[0].set_title(f"Consesus in a Flock {ndim}D t={m.t}")
-    # Get positions of agents
-    pos = m.space.positions.values()
-    pos = np.array(list(pos)).T  # Transform
-    # Get opinions of agents
-    opinions = np.asarray(m.agents.opinion, dtype=float)
-    # Make scatter plot
-    im = ax[0].scatter(*pos, s=10, c=opinions, cmap='cool', vmin = 0, vmax = 1)
-    # Axes stuff
-    ax[0].set_xlim(0, m.p.size)
-    ax[0].set_ylim(0, m.p.size)
-    if ndim == 3:
-        ax[0].set_zlim(0, m.p.size)
+def animate_plot_single(t, ax, sim_data):
+    # Clear axis after each iteration
+    if t > 0:
+        for axis in ax:
+            axis.clear()
+    # Extract data
+    pos = sim_data['pos'][t]
+    opinions = np.asarray(sim_data['opinions'][t], dtype=float)
+    # Set up main simulation scatter
+    im = ax[0].scatter(*pos, s=10, c=opinions, cmap='cool', vmin=0, vmax=1)
+    # Set axes limits and turn off numbers
+    ax[0].set_xlim(0, 50)
+    ax[0].set_ylim(0, 50)
     ax[0].set_axis_off()
-    # Colourbar
-    cb = plt.gcf().colorbar(im, cax=ax[1], orientation='vertical', fraction=0.05)
+    # Set up colourbar
+    cb = plt.gcf().colorbar(im, cax=ax[1], orientation='vertical', fraction=0.05);
     avg_opinion = opinions.mean()
     cb.ax.hlines(avg_opinion,0,1,colors='k',linewidths=3)
-    
 
-def animation_plot(m, p):
-    projection = '3d' if p['ndim'] == 3 else None
+def animate_plot(sim_data):
+    # Set up figure
     fig = plt.figure(figsize=(8,8))
-    simulation = fig.add_subplot(111, projection=projection)
+    simulation = fig.add_subplot(111)
     divider = make_axes_locatable(simulation)
     colourbar = divider.append_axes("right", size="5%", pad=0.05)
     ax = simulation, colourbar
-    animation = ap.animate(m(p), fig, ax, animation_plot_single)
-    return IPython.display.HTML(animation.to_jshtml(fps=20))
+    # Get the animation
+    animation = animate(fig, animate_plot_single, frames=len(sim_data.index), fargs=(ax, sim_data))
+    return HTML(animation.to_jshtml(fps=20))
 
 """ vvv Run model vvv """
 
