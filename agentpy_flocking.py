@@ -191,7 +191,7 @@ class BoidsModel(ap.Model):
     def update(self):
         
         # Create variable for agents opinions
-        opinions = self.agents.opinion
+        opinions = np.array(self.agents.opinion, dtype=np.float16)
         # Record agents opinions
         self.record("opinions", tuple(opinions))
 
@@ -215,7 +215,7 @@ def animate_plot_single(t, ax, sim_data):
             axis.clear()
     # Extract data
     pos = sim_data['pos'][t]
-    opinions = np.asarray(sim_data['opinions'][t], dtype=float)
+    opinions = np.asarray(sim_data['opinions'][t])
     # Set up main simulation scatter
     im = ax[0].scatter(*pos, s=10, c=opinions, cmap='cool', vmin=0, vmax=1)
     # Set axes limits and turn off numbers
