@@ -6,3 +6,6 @@
 
 # Ignore DS store
 *.DS_Store
+
+# Ignore any figures
+*.png
