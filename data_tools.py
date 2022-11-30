@@ -20,11 +20,11 @@ def average_experiment(results):
     # Extract dataframe with agents opinions
     data = results.variables.BoidsModel
 
-    # Create an empty array to store the results in (num_samples, max_timestep)
+    # Create an empty array to store the results in (num_samples, max_timestep+1)
     num_samples = data.index.get_level_values(0).max()
     max_timestep = data.index.get_level_values(1).max()
-    mean_opinion_data = np.zeros((num_samples,max_timestep))
-    std_opinion_data = np.zeros((num_samples,max_timestep))
+    mean_opinion_data = np.zeros((num_samples,max_timestep+1))
+    std_opinion_data = np.zeros((num_samples,max_timestep+1))
 
     # Collect the average opinions at each time step for each simulation run
     for simulation in range(data.index.get_level_values(0).max()):
