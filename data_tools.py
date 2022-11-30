@@ -36,8 +36,8 @@ def average_experiment(results):
         mean = np.mean(opinions, 0)
         std = np.std(opinions, 0)
         # Add to 2D array for means and stds on all experiments
-        mean_opinion_data[:len(mean)] = mean
-        std_opinion_data[:len(std)] = std
+        mean_opinion_data[simulation, :len(mean)] = mean
+        std_opinion_data[simulation, :len(std)] = std
 
     # Calculate the average of each column not counting zero values
     average_opinion = np.mean(np.ma.masked_equal(mean_opinion_data, 0), 0)
