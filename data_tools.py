@@ -41,8 +41,8 @@ def average_experiment(results):
 
     # Calculate the average of each column not counting zero values
     average_opinion = np.mean(np.ma.masked_equal(mean_opinion_data, 0), 0)
-    average_std = np.mean(np.ma.masked_equal(std_opinion_data, 0), 0)
+    std = np.std(np.ma.masked_equal(mean_opinion_data, 0), 0)
 
-    return average_opinion, average_std
+    return average_opinion, std
 
 
