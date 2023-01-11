@@ -8,6 +8,7 @@ from mpl_toolkits.axes_grid1 import make_axes_locatable
 from matplotlib import animation
 from IPython.display import HTML
 import matplotlib.pyplot as plt
+import pandas as pd
 
 def normalize(v):
     """ Normalize a vector to length 1. """
@@ -217,7 +218,7 @@ def animate_plot_single(t, ax, sim_data):
     opinions = np.asarray(sim_data['opinions'][t])
     # Set up main simulation scatter
     im = ax[0].scatter(*pos, s=10, c=opinions, cmap='cool', vmin=0, vmax=1)
-    # Set axes limits, turn off numbers and give title
+    # Set axes limits and turn off numbers
     ax[0].set_xlim(0, 50)
     ax[0].set_ylim(0, 50)
     ax[0].set_axis_off()
@@ -226,20 +227,19 @@ def animate_plot_single(t, ax, sim_data):
     avg_opinion = opinions.mean()
     cb.ax.hlines(avg_opinion,0,1,colors='k',linewidths=3)
 
-def animate_plot(sim_data, save=False):
+def animate_plot(sim_data):
     # Set up figure
-    fig, ax = plt.subplots(figsize=(8,8), dpi=300)
+    fig = plt.figure(figsize=(8,8), dpi=300)
     simulation = fig.add_subplot(111)
     divider = make_axes_locatable(simulation)
     colourbar = divider.append_axes("right", size="5%", pad=0.05)
     ax = simulation, colourbar
     # Get the animation
     anim = animation.FuncAnimation(fig, animate_plot_single, frames=len(sim_data.index), fargs=(ax, sim_data))
-    # Save the animation as a video file
-    if save:
-        filename = "Best of N animation.mov"
-        video = animation.FFMpegWriter(fps=12, bitrate=8000) 
-        anim.save(filename, writer=video)
+    # Save the animation
+    filename = "Best of N animation.mov"
+    video = animation.FFMpegWriter(fps=12, bitrate=8000) 
+    anim.save(filename, writer=video)
     return HTML(anim.to_jshtml(fps=20))
 
 """ vvv Run model vvv """

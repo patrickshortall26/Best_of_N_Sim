@@ -9,3 +9,9 @@
 
 # Ignore any figures
 *.png
+
+# Ignore PDFs
+*.pdf
+
+# Ignore video
+*.mov
